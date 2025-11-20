@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import petzLogo from './assets/metapetzlogo.svg'
+import petzLogo from './assets/metapetzlogodark.svg'
 import './App.css'
 
 function App() {

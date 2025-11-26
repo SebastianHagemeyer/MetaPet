@@ -11,6 +11,16 @@ export default function About() {
             </p>
 
             <p>
+                MetaPetz is being developed as part of the&nbsp;
+                <a href="https://developers.meta.com/horizon/blog/meta-horizon-start-developer-competition-2025/"
+                    target="_blank" rel="noopener noreferrer">
+                    Meta Horizon Start Developer Competition 2025 
+                </a>,
+                showcasing how playful mixed-reality interactions can be built using Quest’s
+                newest spatial features and development tools.
+            </p>
+
+            <p>
                 Each pet is created through your own choices and customisation options,
                 giving you control over its appearance, colour, and style. MetaPetz aims
                 to make virtual pets feel tangible inside your environment using Quest’s
@@ -20,7 +30,7 @@ export default function About() {
             <p>
                 The experience focuses on simple interactions, environmental presence,
                 and playful behaviour.
-        
+
                 MetaPetz is designed around one goal: providing a fun, immersive, and
                 personalised companion inside mixed reality on Meta Quest.
             </p>

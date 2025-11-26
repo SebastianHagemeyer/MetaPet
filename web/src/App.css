@@ -13,27 +13,7 @@
 }
 
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+  filter: drop-shadow(0 0 2em #161338aa);
 }
 
 .card {
@@ -53,9 +33,17 @@
   border-bottom: 1px solid #222;
   position: sticky;
   /* or fixed if you want */
+  background: #242424;            
   top: 0;
 }
 
+
+@media (prefers-color-scheme: light) {
+  .top-nav {
+    background: #FFF;          
+    border-bottom: 1px solid #dfdfdf;
+  }
+}
 
 .top-nav nav {
   display: flex;

@@ -34,7 +34,7 @@ function PetModel(colors) {
             materials.snout.needsUpdate = true;
         }
 
-    }, [actions, materials, bodyMap, eyeMap, colors]);
+    }, [actions, materials, colors]);
 
     return <primitive object={scene} scale={0.6} />;
 

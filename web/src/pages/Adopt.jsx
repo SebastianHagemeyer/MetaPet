@@ -1,10 +1,10 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF, useAnimations, useTexture } from "@react-three/drei";
 import React, { useEffect, useState , useMemo } from "react";
-
+import * as THREE from "three";
 
 function PetModel(colors) {
-    const { scene, animations, materials } = useGLTF("/src/assets/models/testdog.glb");
+    const { scene, animations, materials } = useGLTF("/src/assets/models/testdog2.glb");
     const { actions } = useAnimations(animations, scene);
 
 
@@ -35,6 +35,56 @@ function PetModel(colors) {
         }
 
     }, [actions, materials, colors]);
+
+    useEffect(() => {
+    if (!materials.eye || !materials.eye.map) return;
+
+    const map = materials.eye.map;
+
+    // Don’t tile, don’t wrap around
+    map.wrapS = THREE.ClampToEdgeWrapping;
+    map.wrapT = THREE.ClampToEdgeWrapping;
+
+    // Assume iris is initially centred in its UV patch
+    // (you’ll tweak numbers below to match your texture layout)
+    map.needsUpdate = true;
+  }, [materials.eye]);
+
+/*
+  useFrame(({ clock }) => {
+  if (!materials.eye || !materials.eye.map) return;
+
+  const t = clock.elapsedTime;
+
+  //materials.eye.map.offset.x = 0.083 + Math.sin(t) * 0.05;
+  materials.eye.map.offset.x = 0.002 + Math.sin(t) * 0.002;
+  //materials.eye.map.offset.y = 0.5 + Math.cos(t) * 0.05;
+  materials.eye.map.offset.y = 0
+}); */
+
+  
+  // Move pupil with mouse
+  useFrame(({ pointer }) => {
+    if (!materials.eye || !materials.eye.map) return;
+
+    const map = materials.eye.map;
+
+    // pointer.x / pointer.y are roughly -1..1
+    const px = THREE.MathUtils.clamp(pointer.x, -1, 1);
+    const py = THREE.MathUtils.clamp(pointer.y, -1, 1);
+
+    // How far the iris can move in UV space
+    const maxOffsetX = 0.02; // small, or it will slide off the sclera
+    const maxOffsetY = 0.02;
+
+    
+    var offX = px * maxOffsetX
+    var offY= py * maxOffsetY
+    materials.eye.map.offset.y = offY
+    materials.eye.map.offset.x = -offX
+
+    // map.needsUpdate = true; // usually not needed every frame, but safe if glitchy
+  });
 
     return <primitive object={scene} scale={0.6} />;
 

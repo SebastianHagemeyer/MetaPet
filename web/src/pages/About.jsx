@@ -14,7 +14,7 @@ export default function About() {
                 Each pet is created through your own choices and customisation options,
                 giving you control over its appearance, colour, and style. MetaPetz aims
                 to make virtual pets feel tangible inside your environment using Quest’s
-                depth, surface detection, and hand-tracking capabilities.
+                depth, surface detection, and hand-tracking capabilities. For example, waving your hand in a circular motion gets your pet to roll over. When fingers are curled toward your body repeatedly, then your pet comes to you.
             </p>
 
             <p>

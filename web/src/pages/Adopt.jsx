@@ -3,8 +3,10 @@ import { OrbitControls, Stage, useGLTF, useAnimations, useTexture } from "@react
 import React, { useEffect, useState , useMemo } from "react";
 import * as THREE from "three";
 
+import dogUrl from "/src/assets/models/testdog2.glb";
+
 function PetModel(colors) {
-    const { scene, animations, materials } = useGLTF("/src/assets/models/testdog2.glb");
+    const { scene, animations, materials } = useGLTF(dogUrl);
     const { actions } = useAnimations(animations, scene);
 
 

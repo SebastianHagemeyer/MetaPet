@@ -1,21 +1,50 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF, useAnimations, useTexture } from "@react-three/drei";
-import React, { useEffect, useState , useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import * as THREE from "three";
 
-
+import { AnimationUtils } from "three"; // ← add at top
 
 function PetModel(colors) {
-    const { scene, animations, materials } = useGLTF("/models/testdog2.glb");
-    const { actions } = useAnimations(animations, scene);
+    const { scene, animations, materials } = useGLTF("/models/dogani.glb");
 
+
+    // Make a sub-clip once, from the first animation
+    const subClips = useMemo(() => {
+        if (!animations || animations.length === 0) return [];
+        const clip = animations[0];
+
+        // frames 3 → 19 at 24fps – adjust if needed
+        const walkLoop = AnimationUtils.subclip(
+            clip,
+            "WalkLoop",
+            2,
+            18,
+            19
+        );
+        return [walkLoop];
+    }, [animations]);
+
+    // useAnimations will create the mixer and hook it into the render loop
+    const { actions } = useAnimations(subClips, scene);
+
+    // run the animation
+    useEffect(() => {
+        const action = actions?.WalkLoop;
+        if (action) {
+            action.reset();
+            action.setLoop(THREE.LoopRepeat);
+            action.play();
+            // console.log("Playing WalkLoop animation");
+            return () => action.stop();
+        }
+    }, [actions]);
 
     // Auto-play first animation if present
     React.useEffect(() => {
         //console.log("use effect")
-        if (actions && Object.keys(actions).length > 0) {
-            actions[Object.keys(actions)[0]].play(); // plays idle or whatever your first animation is
-        }
+
+
         // APPLY TEXTURES TO MATERIALS
         if (materials.coat) {
 
@@ -39,56 +68,56 @@ function PetModel(colors) {
     }, [actions, materials, colors]);
 
     useEffect(() => {
-    if (!materials.eye || !materials.eye.map) return;
+        if (!materials.eye || !materials.eye.map) return;
 
-    const map = materials.eye.map;
+        const map = materials.eye.map;
 
-    // Don’t tile, don’t wrap around
-    map.wrapS = THREE.ClampToEdgeWrapping;
-    map.wrapT = THREE.ClampToEdgeWrapping;
+        // Don’t tile, don’t wrap around
+        map.wrapS = THREE.ClampToEdgeWrapping;
+        map.wrapT = THREE.ClampToEdgeWrapping;
 
-    // Assume iris is initially centred in its UV patch
-    // (you’ll tweak numbers below to match your texture layout)
-    map.needsUpdate = true;
-  }, [materials.eye]);
+        // Assume iris is initially centred in its UV patch
+        // (you’ll tweak numbers below to match your texture layout)
+        map.needsUpdate = true;
+    }, [materials.eye]);
 
-/*
-  useFrame(({ clock }) => {
-  if (!materials.eye || !materials.eye.map) return;
-
-  const t = clock.elapsedTime;
-
-  //materials.eye.map.offset.x = 0.083 + Math.sin(t) * 0.05;
-  materials.eye.map.offset.x = 0.002 + Math.sin(t) * 0.002;
-  //materials.eye.map.offset.y = 0.5 + Math.cos(t) * 0.05;
-  materials.eye.map.offset.y = 0
-}); */
-
-  
-  // Move pupil with mouse
-  useFrame(({ pointer }) => {
-    if (!materials.eye || !materials.eye.map) return;
-
-    const map = materials.eye.map;
-
-    // pointer.x / pointer.y are roughly -1..1
-    const px = THREE.MathUtils.clamp(pointer.x, -1, 1);
-    const py = THREE.MathUtils.clamp(pointer.y, -1, 1);
-
-    // How far the iris can move in UV space
-    const maxOffsetX = 0.02; // small, or it will slide off the sclera
-    const maxOffsetY = 0.02;
-
+    /*
+      useFrame(({ clock }) => {
+      if (!materials.eye || !materials.eye.map) return;
     
-    var offX = px * maxOffsetX
-    var offY= py * maxOffsetY
-    materials.eye.map.offset.y = offY
-    materials.eye.map.offset.x = -offX
+      const t = clock.elapsedTime;
+    
+      //materials.eye.map.offset.x = 0.083 + Math.sin(t) * 0.05;
+      materials.eye.map.offset.x = 0.002 + Math.sin(t) * 0.002;
+      //materials.eye.map.offset.y = 0.5 + Math.cos(t) * 0.05;
+      materials.eye.map.offset.y = 0
+    }); */
 
-    // map.needsUpdate = true; // usually not needed every frame, but safe if glitchy
-  });
 
-    return <primitive object={scene} scale={0.6} />;
+    // Move pupil with mouse
+    useFrame(({ pointer }) => {
+        if (!materials.eye || !materials.eye.map) return;
+
+        const map = materials.eye.map;
+
+        // pointer.x / pointer.y are roughly -1..1
+        const px = THREE.MathUtils.clamp(pointer.x, -1, 1);
+        const py = THREE.MathUtils.clamp(pointer.y, -1, 1);
+
+        // How far the iris can move in UV space
+        const maxOffsetX = 0.02; // small, or it will slide off the sclera
+        const maxOffsetY = 0.02;
+
+
+        var offX = px * maxOffsetX
+        var offY = py * maxOffsetY
+        materials.eye.map.offset.y = offY
+        materials.eye.map.offset.x = -offX
+
+        // map.needsUpdate = true; // usually not needed every frame, but safe if glitchy
+    });
+
+    return <primitive object={scene} scale={0.6}  />;
 
 }
 
@@ -158,7 +187,7 @@ export default function Adopt() {
             </button>
 
             <Canvas shadows camera={{ position: [0, 0, 1], fov: 40 }}>
-                <Stage environment="city" intensity={0.7} adjustCamera={false}>
+                <Stage environment="city" intensity={0.7} adjustCamera={false} shadows={false}>
                     <PetModel colors={colors} />
                 </Stage>
                 <OrbitControls enablePan={false} minDistance={2} maxDistance={4} />

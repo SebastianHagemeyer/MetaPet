@@ -6,42 +6,94 @@ import * as THREE from "three";
 import { AnimationUtils } from "three"; // ← add at top
 
 function PetModel(colors) {
-    const { scene, animations, materials } = useGLTF("/models/dogani.glb");
+    const { scene, animations, materials } = useGLTF("/models/thebest.glb");
+    const { actions, mixer } = useAnimations(animations, scene);
 
 
-    // Make a sub-clip once, from the first animation
-    const subClips = useMemo(() => {
-        if (!animations || animations.length === 0) return [];
-        const clip = animations[0];
 
-        // frames 3 → 19 at 24fps – adjust if needed
-        const walkLoop = AnimationUtils.subclip(
-            clip,
-            "WalkLoop",
-            2,
-            18,
-            19
-        );
-        return [walkLoop];
-    }, [animations]);
 
-    // useAnimations will create the mixer and hook it into the render loop
-    const { actions } = useAnimations(subClips, scene);
-
-    // run the animation
     useEffect(() => {
-        const action = actions?.WalkLoop;
-        if (action) {
+        if (!actions || Object.keys(actions).length === 0) return;
+
+        const ACTION_NAMES = ["sit", "wag", "walkloop"];
+
+        // Normalise once
+        Object.values(actions).forEach(a => {
+            a.reset();
+            a.enabled = true;
+            a.setEffectiveWeight(1);
+            a.stop();
+        });
+
+        let currentName = null;
+        let timeoutId = null;
+
+        const pickNextName = () => {
+            const pool = ACTION_NAMES.filter(n => n !== currentName);
+            return pool[Math.floor(Math.random() * pool.length)];
+        };
+
+        const play = (name) => {
+            const action = actions[name];
+            if (!action) return;
+
+            const wasCurrent = currentName && actions[currentName];
+
+            // Fade out previous instead of hard stop
+            if (wasCurrent && currentName !== name) {
+                actions[currentName].fadeOut(0.25);
+            }
+
+            const isLoopingWalk = name === "walkloop";
+
             action.reset();
-            action.setLoop(THREE.LoopRepeat);
-            action.play();
-            // console.log("Playing WalkLoop animation");
-            return () => action.stop();
-        }
+            action.enabled = true;
+
+            if (name === "wag") {
+                // if you want a ping-pong wag:
+                action.setLoop(THREE.LoopPingPong, 2); // forward + back twice
+            } else {
+                action.setLoop(
+                    isLoopingWalk ? THREE.LoopRepeat : THREE.LoopOnce
+                );
+            }
+
+            action.clampWhenFinished = !isLoopingWalk;
+
+            action.fadeIn(0.25).play();
+
+            currentName = name;
+
+            // Use real clip duration
+            const clipDuration = action.getClip().duration; // seconds
+
+            let cycles = 1;
+            if (isLoopingWalk) {
+                // Keep walkloop around a bit
+                cycles = 1 + Math.floor(Math.random() * 3); // 1–3 cycles
+            }
+
+            // +0.1 to give it breathing room to fully finish / reverse
+            const waitMs = (clipDuration * cycles + 1) * 1000;
+
+            timeoutId = setTimeout(() => {
+                const next = pickNextName();
+                play(next);
+            }, waitMs);
+        };
+
+        // Start sequence
+        play("sit");
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            Object.values(actions).forEach(a => a.stop());
+        };
     }, [actions]);
 
-    // Auto-play first animation if present
-    React.useEffect(() => {
+
+
+    useEffect(() => {
         //console.log("use effect")
 
 
@@ -117,7 +169,7 @@ function PetModel(colors) {
         // map.needsUpdate = true; // usually not needed every frame, but safe if glitchy
     });
 
-    return <primitive object={scene} scale={0.6}  />;
+    return <primitive object={scene} scale={0.6} />;
 
 }
 

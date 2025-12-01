@@ -3,9 +3,15 @@ import { OrbitControls, Stage, useGLTF, useAnimations, useTexture } from "@react
 import React, { useEffect, useState, useMemo } from "react";
 import * as THREE from "three";
 
+import { savePetToDB } from "/src/api/petsDb";
+
 import { AnimationUtils } from "three"; // ← add at top
 
 function PetModel(colors) {
+
+
+    
+
     const { scene, animations, materials } = useGLTF("/models/thebest.glb");
     const { actions, mixer } = useAnimations(animations, scene);
 
@@ -176,6 +182,36 @@ function PetModel(colors) {
 
 export default function Adopt() {
 
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
+
+
+     // Example – plug in your actual pet state here
+    const pet = {
+        id: "GF123",
+        name: "Gizmo",
+        colors: { coat: "#d5b6fb", eye: "#eb7a88", snout: "#b5b550" },
+        level: 1,
+        xp: 0.1,
+    };
+
+    const userId = "demoUser"; // later swap to auth uid
+
+    const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const key = await savePetToDB(userId, pet);
+      console.log("Saved pet with key:", key);
+    } catch (e) {
+      console.error(e);
+      setError("Failed to save pet");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
     const randomHex = (brightness = 0.5) => {
         brightness = Math.min(1, Math.max(0, brightness));
 
@@ -244,6 +280,10 @@ export default function Adopt() {
                 </Stage>
                 <OrbitControls enablePan={false} minDistance={2} maxDistance={4} />
             </Canvas>
+
+            <button onClick={handleSave} disabled={saving}>
+        {saving ? "Saving..." : "Save Pet"}
+      </button>
 
         </div>
     )

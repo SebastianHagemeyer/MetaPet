@@ -238,7 +238,7 @@ export default function Adopt() {
                 Randomize Colors
             </button>
 
-            <Canvas shadows camera={{ position: [0, 0, 1], fov: 40 }}>
+            <Canvas key = "special" shadows camera={{ position: [0, 0, 1], fov: 40 }}>
                 <Stage environment="city" intensity={0.7} adjustCamera={false} shadows={false}>
                     <PetModel colors={colors} />
                 </Stage>

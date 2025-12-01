@@ -1,30 +1,27 @@
+import React, { useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Stage, useGLTF, useAnimations, useTexture } from "@react-three/drei";
-import React, { useEffect, useState, useMemo } from "react";
+import { OrbitControls, Stage, useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 
 import { savePetToDB } from "/src/api/petsDb";
 
-import { AnimationUtils } from "three"; // ← add at top
+import randomIcon from "/src/assets/random.svg";
 
-function PetModel(colors) {
+import { PET_NAMES , PET_DESCRIPTIONS} from "/src/data/petpresets";
 
+// ------------- Pet Model -----------------
 
-    
-
+function PetModel({ colors }) {
     const { scene, animations, materials } = useGLTF("/models/thebest.glb");
-    const { actions, mixer } = useAnimations(animations, scene);
+    const { actions } = useAnimations(animations, scene);
 
-
-
-
+    // --- Animation logic ---
     useEffect(() => {
         if (!actions || Object.keys(actions).length === 0) return;
 
         const ACTION_NAMES = ["sit", "wag", "walkloop"];
 
-        // Normalise once
-        Object.values(actions).forEach(a => {
+        Object.values(actions).forEach((a) => {
             a.reset();
             a.enabled = true;
             a.setEffectiveWeight(1);
@@ -35,7 +32,7 @@ function PetModel(colors) {
         let timeoutId = null;
 
         const pickNextName = () => {
-            const pool = ACTION_NAMES.filter(n => n !== currentName);
+            const pool = ACTION_NAMES.filter((n) => n !== currentName);
             return pool[Math.floor(Math.random() * pool.length)];
         };
 
@@ -43,10 +40,7 @@ function PetModel(colors) {
             const action = actions[name];
             if (!action) return;
 
-            const wasCurrent = currentName && actions[currentName];
-
-            // Fade out previous instead of hard stop
-            if (wasCurrent && currentName !== name) {
+            if (currentName && actions[currentName] && currentName !== name) {
                 actions[currentName].fadeOut(0.25);
             }
 
@@ -56,30 +50,23 @@ function PetModel(colors) {
             action.enabled = true;
 
             if (name === "wag") {
-                // if you want a ping-pong wag:
-                action.setLoop(THREE.LoopPingPong, 2); // forward + back twice
+                action.setLoop(THREE.LoopPingPong, 2);
             } else {
-                action.setLoop(
-                    isLoopingWalk ? THREE.LoopRepeat : THREE.LoopOnce
-                );
+                action.setLoop(isLoopingWalk ? THREE.LoopRepeat : THREE.LoopOnce);
             }
 
             action.clampWhenFinished = !isLoopingWalk;
-
             action.fadeIn(0.25).play();
 
             currentName = name;
 
-            // Use real clip duration
-            const clipDuration = action.getClip().duration; // seconds
-
+            const clipDuration = action.getClip().duration;
             let cycles = 1;
+
             if (isLoopingWalk) {
-                // Keep walkloop around a bit
                 cycles = 1 + Math.floor(Math.random() * 3); // 1–3 cycles
             }
 
-            // +0.1 to give it breathing room to fully finish / reverse
             const waitMs = (clipDuration * cycles + 1) * 1000;
 
             timeoutId = setTimeout(() => {
@@ -88,147 +75,119 @@ function PetModel(colors) {
             }, waitMs);
         };
 
-        // Start sequence
         play("sit");
 
         return () => {
             if (timeoutId) clearTimeout(timeoutId);
-            Object.values(actions).forEach(a => a.stop());
+            Object.values(actions).forEach((a) => a.stop());
         };
     }, [actions]);
 
-
-
+    // --- Apply colours to materials ---
     useEffect(() => {
-        //console.log("use effect")
-
-
-        // APPLY TEXTURES TO MATERIALS
         if (materials.coat) {
-
-            materials.coat.color.set(colors.colors.coat);
-
+            materials.coat.color.set(colors.coat);
             materials.coat.needsUpdate = true;
         }
         if (materials.eye) {
-
-            materials.eye.color.set(colors.colors.eye);
-
+            materials.eye.color.set(colors.eye);
             materials.eye.needsUpdate = true;
         }
         if (materials.snout) {
-            //materials.eyes.map = eyeMap;
-            materials.snout.color.set(colors.colors.snout);
-
+            materials.snout.color.set(colors.snout);
             materials.snout.needsUpdate = true;
         }
+    }, [materials, colors]);
 
-    }, [actions, materials, colors]);
-
+    // --- Eye texture settings (if mapped) ---
     useEffect(() => {
         if (!materials.eye || !materials.eye.map) return;
-
         const map = materials.eye.map;
 
-        // Don’t tile, don’t wrap around
         map.wrapS = THREE.ClampToEdgeWrapping;
         map.wrapT = THREE.ClampToEdgeWrapping;
-
-        // Assume iris is initially centred in its UV patch
-        // (you’ll tweak numbers below to match your texture layout)
         map.needsUpdate = true;
-    }, [materials.eye]);
+    }, [materials]);
 
-    /*
-      useFrame(({ clock }) => {
-      if (!materials.eye || !materials.eye.map) return;
-    
-      const t = clock.elapsedTime;
-    
-      //materials.eye.map.offset.x = 0.083 + Math.sin(t) * 0.05;
-      materials.eye.map.offset.x = 0.002 + Math.sin(t) * 0.002;
-      //materials.eye.map.offset.y = 0.5 + Math.cos(t) * 0.05;
-      materials.eye.map.offset.y = 0
-    }); */
-
-
-    // Move pupil with mouse
+    // --- Move pupil with mouse ---
     useFrame(({ pointer }) => {
         if (!materials.eye || !materials.eye.map) return;
 
         const map = materials.eye.map;
 
-        // pointer.x / pointer.y are roughly -1..1
         const px = THREE.MathUtils.clamp(pointer.x, -1, 1);
         const py = THREE.MathUtils.clamp(pointer.y, -1, 1);
 
-        // How far the iris can move in UV space
-        const maxOffsetX = 0.02; // small, or it will slide off the sclera
+        const maxOffsetX = 0.02;
         const maxOffsetY = 0.02;
 
+        const offX = px * maxOffsetX;
+        const offY = py * maxOffsetY;
 
-        var offX = px * maxOffsetX
-        var offY = py * maxOffsetY
-        materials.eye.map.offset.y = offY
-        materials.eye.map.offset.x = -offX
-
-        // map.needsUpdate = true; // usually not needed every frame, but safe if glitchy
+        map.offset.y = offY;
+        map.offset.x = -offX;
     });
 
     return <primitive object={scene} scale={0.6} />;
-
 }
 
+// ------------- Adopt Page -----------------
 
 export default function Adopt() {
-
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
 
 
-     // Example – plug in your actual pet state here
-    const pet = {
+    const randomizeName = () => {
+  const newName = PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)];
+
+  setPet((prev) => ({
+    ...prev,
+    name: newName,
+  }));
+};
+
+const randomizeDescription = () => {
+  const newDescription =
+    PET_DESCRIPTIONS[Math.floor(Math.random() * PET_DESCRIPTIONS.length)];
+
+  setPet((prev) => ({
+    ...prev,
+    description: newDescription,
+  }));
+};
+
+
+    const [pet, setPet] = useState({
         id: "GF123",
         name: "Gizmo",
-        colors: { coat: "#d5b6fb", eye: "#eb7a88", snout: "#b5b550" },
+        description: "Playful and curious little hound.",
+        colors: {
+            coat: "#3A8DFF",
+            eye: "#FFFFFF",
+            snout: "#222222",
+        },
         level: 1,
         xp: 0.1,
-    };
+    });
 
-    const userId = "demoUser"; // later swap to auth uid
+    const userId = "demoUser"; // later: real auth uid
 
-    const handleSave = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      const key = await savePetToDB(userId, pet);
-      console.log("Saved pet with key:", key);
-    } catch (e) {
-      console.error(e);
-      setError("Failed to save pet");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-
+    // --- Colour randomiser ---
     const randomHex = (brightness = 0.5) => {
         brightness = Math.min(1, Math.max(0, brightness));
 
-        // raw random color
         let r = Math.random() * 255;
         let g = Math.random() * 255;
         let b = Math.random() * 255;
 
         if (brightness < 0.5) {
-            // DARKEN: scale colour down
-            const factor = brightness / 0.5; // 0→black, 0.5→original
+            const factor = brightness / 0.5;
             r *= factor;
             g *= factor;
             b *= factor;
         } else if (brightness > 0.5) {
-            // LIGHTEN: blend toward white
-            const factor = (brightness - 0.5) / 0.5; // 0.5→none, 1→full pastel push
+            const factor = (brightness - 0.5) / 0.5;
             r = r + (255 - r) * factor;
             g = g + (255 - g) * factor;
             b = b + (255 - b) * factor;
@@ -242,21 +201,39 @@ export default function Adopt() {
         );
     };
 
-
-    const [colors, setColors] = useState({
-        coat: "#3A8DFF",
-        eye: "#FFFFFF",
-        snout: "#222222",
-    });
-
     const randomize = () => {
+        setPet((prev) => ({
+            ...prev,
+            colors: {
+                coat: randomHex(0.6),
+                eye: randomHex(0.7),
+                snout: randomHex(0.3),
+            },
+        }));
+    };
 
-        setColors({
-            coat: randomHex(0.6),
-            eye: randomHex(0.7),
-            snout: randomHex(0.3),
-        });
+    const handleColorChange = (key, value) => {
+        setPet((prev) => ({
+            ...prev,
+            colors: {
+                ...prev.colors,
+                [key]: value,
+            },
+        }));
+    };
 
+    const handleSave = async () => {
+        setSaving(true);
+        setError(null);
+        try {
+            const key = await savePetToDB(userId, pet);
+            console.log("Saved pet with key:", key);
+        } catch (e) {
+            console.error(e);
+            setError("Failed to save pet");
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -264,27 +241,151 @@ export default function Adopt() {
             <h1>Adopt</h1>
             <p>Choose your MetaPet and customise it.</p>
 
-            <button onClick={randomize} style={{
-                padding: "10px 20px",
-                marginBottom: "20px",
-                fontSize: "1rem",
-                borderRadius: "6px",
-                cursor: "pointer",
-            }}>
-                Randomize Colors
-            </button>
+            {/* Pet meta */}
+            <div className="petNameRow">
+                <h2 className="petName">{pet.name}</h2>
+                <img
+                    src={randomIcon}
+                    alt="Random"
+                    className="diceIcon petNameDice"
+                    onClick={randomizeName}
+                />
+            </div>
 
-            <Canvas key = "special" shadows camera={{ position: [0, 0, 1], fov: 40 }}>
+            <div className="petNameRow">
+                <p className="petDescription">{pet.description}</p>
+                <img
+                    src={randomIcon}
+                    alt="Random"
+                    className="diceIcon petNameDice"
+                    onClick={randomizeDescription}  
+                />
+            </div>
+
+
+
+            {/* Controls Row */}
+            <div
+                className="controls"
+            >
+                {/*  Squares */}
+                <div
+                    style={{
+                        display: "flex",
+                        gap: "16px",
+                        alignItems: "center",
+                    }}
+                >
+                    {/* Randomize Button */}
+                    <button
+                        onClick={randomize}
+                        style={{
+                            padding: "10px 20px",
+                            fontSize: "1rem",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            height: "40px",
+                            display: "flex",
+                            alignItems: "center",
+                        }}
+                    >
+                        Randomize Colors
+                    </button>
+
+                    {/* Coat  - coat*/}
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                        }}
+                    >
+                        <label style={{ cursor: "pointer" }}>
+                            <div className="colorSquare"
+                                style={{
+                                    backgroundColor: pet.colors.coat,
+                                }}
+                            />
+
+                            <input
+                                type="color"
+                                value={pet.colors.coat}
+                                onChange={(e) => handleColorChange("coat", e.target.value)}
+                                className="hiddenColorInput"
+                            />
+
+                        </label>
+                    </div>
+
+                    {/* Eyes  - eye*/}
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                        }}
+                    >
+                        <label style={{ cursor: "pointer" }}>
+                            <div className="colorSquare"
+                                style={{
+                                    backgroundColor: pet.colors.eye,
+                                }}
+                            />
+
+                            <input
+                                type="color"
+                                value={pet.colors.eye}
+                                onChange={(e) => handleColorChange("eye", e.target.value)}
+                                className="hiddenColorInput"
+                            />
+
+                        </label>
+                    </div>
+
+                    {/* Snout  - snout*/}
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                        }}
+                    >
+                        <label style={{ cursor: "pointer" }}>
+                            <div className="colorSquare"
+                                style={{
+                                    backgroundColor: pet.colors.snout,
+                                }}
+                            />
+
+                            <input
+                                type="color"
+                                value={pet.colors.snout}
+                                onChange={(e) => handleColorChange("snout", e.target.value)}
+                                className="hiddenColorInput"
+                            />
+
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <Canvas shadows camera={{ position: [0, 0, 1], fov: 40 }}>
                 <Stage environment="city" intensity={0.7} adjustCamera={false} shadows={false}>
-                    <PetModel colors={colors} />
+                    <PetModel colors={pet.colors} />
                 </Stage>
                 <OrbitControls enablePan={false} minDistance={2} maxDistance={4} />
             </Canvas>
 
-            <button onClick={handleSave} disabled={saving}>
-        {saving ? "Saving..." : "Save Pet"}
-      </button>
-
+            <div style={{ marginTop: "16px" }}>
+                <button onClick={handleSave} disabled={saving}>
+                    {saving ? "Saving..." : "Save Pet"}
+                </button>
+                {error && (
+                    <p style={{ color: "red", marginTop: "8px" }}>
+                        {error}
+                    </p>
+                )}
+            </div>
         </div>
-    )
+    );
 }

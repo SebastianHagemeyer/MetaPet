@@ -1,0 +1,12 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- shadow -->
+  <rect x="4.5" y="4.5" width="18" height="18" rx="4" ry="4" fill="#00000033"></rect>
+  <!-- main dice face -->
+  <rect x="3" y="3" width="18" height="18" rx="4" ry="4" fill="#ffffff" stroke="#000" stroke-width="2"></rect>
+  <!-- pips -->
+  <circle cx="8" cy="8" r="1.5" fill="#000000"></circle>
+  <circle cx="16" cy="8" r="1.5" fill="#000000"></circle>
+  <circle cx="12" cy="12" r="1.5" fill="#000000"></circle>
+  <circle cx="8" cy="16" r="1.5" fill="#000000"></circle>
+  <circle cx="16" cy="16" r="1.5" fill="#000000"></circle>
+</svg>

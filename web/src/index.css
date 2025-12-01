@@ -18,6 +18,7 @@ a {
   color: #a4a8ff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -46,31 +47,119 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
 @media (prefers-color-scheme: light) {
-  a{
+  a {
     color: #2931be;
   }
+
   :root {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
+
   .logo {
     content: url('/src/assets/metapetzlogo.svg');
   }
-  
-  
+
+
+}
+
+
+.controls {
+ 
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* centers horizontally */
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.colorSquare {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    margin-bottom: 6px;
+}
+
+.hiddenColorInput {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.randomButton {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.12s ease;
+}
+
+.randomButton:active {
+  transform: scale(0.92);
+}
+
+
+
+
+.petNameRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.petName {
+  margin: 0;
+  width: 200px;      /* big enough for all names */
+  text-align: center;
+}
+
+
+.petDescription{
+  margin: 4px 0 0 0;
+  font-size: 0.9 rem; 
+  opacity: 0.8;
+  width: 200px;      /* big enough for all descriptions */
+  text-align: center;
+  min-height: 2.4em;   /* approx 2 lines of text */
+  line-height: 1.2em;
+}
+
+.petNameDice {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+/* satisfying click */
+.petNameDice:active {
+  transform: scale(0.85) rotate(20deg);
 }

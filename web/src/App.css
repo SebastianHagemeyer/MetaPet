@@ -1,7 +1,8 @@
 #root {
-  max-width: 1280px;
+  max-width: none;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0rem;
   text-align: center;
 }
 
@@ -12,25 +13,7 @@
 }
 
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+  filter: drop-shadow(0 0 2em #161338aa);
 }
 
 .card {
@@ -39,4 +22,62 @@
 
 .read-the-docs {
   color: #888;
+}
+
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #222;
+  position: sticky;
+  /* or fixed if you want */
+  background: #242424;            
+  top: 0;
+}
+
+
+@media (prefers-color-scheme: light) {
+  .top-nav {
+    background: #FFF;          
+    border-bottom: 1px solid #dfdfdf;
+  }
+}
+
+.top-nav nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.app-root {
+  flex:1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-container {
+  flex: 1;
+  display: flex;
+}
+
+.hpage {
+  flex: 1; /* IMPORTANT: lets it take all vertical space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* vertical centering */
+  align-items: center;     /* horizontal centering */
+  text-align: center;
+  padding: 2rem;
+}
+
+.page {
+  width: 100%;
+  max-width: 900px;     /* keeps content readable, not stretched */
+  margin: 0 auto;       /* centers it horizontally */
+  padding: 4rem 2rem;   /* spacing from top + sides */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;          /* nice spacing between elements */
 }

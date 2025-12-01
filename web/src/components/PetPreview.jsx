@@ -1,5 +1,5 @@
 // src/components/PetPreview.jsx
-//renamed
+//renamed test
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import PetThumbnailCanvas from "./PetThumbnailCanvas";

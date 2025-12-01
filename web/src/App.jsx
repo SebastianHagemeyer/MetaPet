@@ -1,28 +1,27 @@
-import { useState } from 'react'
-import petzLogo from './assets/metapetzlogodark.svg'
+import { Link, Outlet } from 'react-router-dom'
 import './App.css'
 
 function App() {
-
-
   return (
-    <>
-      <div>
-        <a href="https://metapetz.com" target="_blank">
-          <img src={petzLogo} className="logo" alt="Vite logo" />
-        </a>
-        
-      </div>
-      <h1>MetaPetz</h1>
-      <div className="card">
-        <p>
-          Welcome to MetaPetz
-        </p>
-      </div>
-      <p className="read-the-docs">
-          Curate and interact with your own pet in AR.
-      </p>
-    </>
+    <div className="app-root">
+      <header className="top-nav">
+        <div className="brand">
+          <Link to="/">MetaPetz</Link>
+        </div>
+
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+          <Link to="/adopt">Adopt</Link>
+          <Link to="/petz">Petz</Link>
+        </nav>
+      </header>
+
+      <main className="page-container">
+        {/* This is where the “current page” renders */}
+        <Outlet />
+      </main>
+    </div>
   )
 }
 

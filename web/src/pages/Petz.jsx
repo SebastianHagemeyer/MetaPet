@@ -1,15 +1,34 @@
 // src/pages/Petz.jsx
 import PetPreview from "/src/components/PetPreview";
-import { pets } from "/src/data/pets";
-import { Suspense } from "react";
+import { getPetsFromDB } from "/src/api/petsDb";
+import { useState, useEffect } from "react";
 
 export default function Petz() {
+  const [pets, setPets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getPetsFromDB("demoUser")
+      .then((data) => {
+        setPets(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch pets:", err);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="page">
       <h1>All Petz</h1>
       <p>View all the MetaPetz!</p>
 
-      <Suspense fallback={<div>Loading dogs…</div>}>
+      {loading ? (
+        <div>Loading dogs…</div>
+      ) : pets.length === 0 ? (
+        <div>No pets found.</div>
+      ) : (
         <div
           style={{
             display: "grid",
@@ -22,7 +41,7 @@ export default function Petz() {
             <PetPreview key={pet.id} pet={pet} />
           ))}
         </div>
-      </Suspense>
+      )}
     </div>
   );
 }

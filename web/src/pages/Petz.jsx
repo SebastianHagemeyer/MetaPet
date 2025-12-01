@@ -7,7 +7,7 @@ export default function Petz() {
   return (
     <div className="page">
       <h1>All Petz</h1>
-      <p>Testing multiple Pet Previews</p>
+      <p>View all the MetaPetz!</p>
 
       <Suspense fallback={<div>Loading dogs…</div>}>
         <div

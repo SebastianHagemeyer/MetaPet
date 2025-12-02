@@ -180,19 +180,32 @@ function PetModel(colors) {
 
 // src/pages/PetView.jsx
 import { useParams, Navigate } from "react-router-dom";
-import { pets } from "/src/data/pets";
-
-export function getPetById(id) {
-  return pets.find((p) => p.id === id);
-}
+import { getPetByShortId } from "/src/api/petsDb";
 
 export default function PetView() {
   const { id } = useParams();
-  const pet = getPetById(id);
+  const [pet, setPet] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getPetByShortId("demoUser", id)
+      .then((data) => {
+        setPet(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch pet:", err);
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
+    return <div className="page">Loading...</div>;
+  }
 
   // Invalid id → hard 404 page
   if (!pet) {
-    return <Navigate to="/404" replace />; // or just render a message below
+    return <Navigate to="/404" replace />;
   }
 
   return (

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import PetThumbnailCanvas from "./PetThumbnailCanvas";
 
 export default function PetPreview({ pet }) {
-  const { id, name, description, colors } = pet;
+  const { id, shortId, name, description, colors } = pet;
   const [thumb, setThumb] = useState(null);
 
   // optional: load from localStorage if you want persistence
@@ -55,7 +55,7 @@ export default function PetPreview({ pet }) {
 
       <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
         <Link
-          to={`/view/${id}`}
+          to={`/view/${shortId}`}
           style={{
             padding: "6px 10px",
             borderRadius: "6px",
@@ -66,7 +66,7 @@ export default function PetPreview({ pet }) {
           View
         </Link>
         <Link
-          to={`/share/${id}`}
+          to={`/share/${shortId}`}
           style={{
             padding: "6px 10px",
             borderRadius: "6px",

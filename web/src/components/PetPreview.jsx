@@ -1,23 +1,12 @@
 // src/components/PetPreview.jsx
 //renamed test
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PetThumbnailCanvas from "./PetThumbnailCanvas";
 
 export default function PetPreview({ pet }) {
   const { id, shortId, name, description, colors } = pet;
   const [thumb, setThumb] = useState(null);
-
-  // optional: load from localStorage if you want persistence
-  useEffect(() => {
-    const stored = window.localStorage.getItem(`pet-thumb-${id}`);
-    if (stored) setThumb(stored);
-  }, [id]);
-
-  const handleReady = (dataUrl) => {
-    setThumb(dataUrl);
-    window.localStorage.setItem(`pet-thumb-${id}`, dataUrl);
-  };
 
   return (
     <div
@@ -44,7 +33,7 @@ export default function PetPreview({ pet }) {
             }}
           />
         ) : (
-          <PetThumbnailCanvas colors={colors} onReady={handleReady} />
+          <PetThumbnailCanvas colors={colors} onReady={setThumb} />
         )}
       </div>
 

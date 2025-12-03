@@ -162,7 +162,7 @@ const randomizeDescription = () => {
 
 
     const [pet, setPet] = useState({
-        id: "GF123",
+        shortId: "GF123",
         name: "Gizmo",
         description: "Playful and curious little hound.",
         colors: {

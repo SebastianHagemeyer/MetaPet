@@ -93,7 +93,7 @@ export default function Petz() {
       ) : (
         <>
           <div
-            key={currentPage}
+            key={`${currentPage}-${sortOrder}`}
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",

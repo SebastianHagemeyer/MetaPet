@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
+import { useNavigate } from "react-router-dom";
 
 import { savePetToDB } from "/src/api/petsDb";
 
@@ -134,8 +135,10 @@ function PetModel({ colors }) {
 // ------------- Adopt Page -----------------
 
 export default function Adopt() {
+    const navigate = useNavigate();
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
+    const [savedPetId, setSavedPetId] = useState(null);
 
 
     const randomizeName = () => {
@@ -168,7 +171,7 @@ const randomizeDescription = () => {
             snout: "#222222",
         },
         level: 1,
-        xp: 0.1,
+        xp: 0,
     });
 
     const userId = "demoUser"; // later: real auth uid
@@ -226,8 +229,9 @@ const randomizeDescription = () => {
         setSaving(true);
         setError(null);
         try {
-            const key = await savePetToDB(userId, pet);
-            console.log("Saved pet with key:", key);
+            const result = await savePetToDB(userId, pet);
+            console.log("Saved pet with key:", result);
+            setSavedPetId(result.shortId);
         } catch (e) {
             console.error(e);
             setError("Failed to save pet");
@@ -377,13 +381,50 @@ const randomizeDescription = () => {
             </Canvas>
 
             <div style={{ marginTop: "16px" }}>
-                <button onClick={handleSave} disabled={saving}>
-                    {saving ? "Saving..." : "Save Pet"}
-                </button>
-                {error && (
-                    <p style={{ color: "red", marginTop: "8px" }}>
-                        {error}
-                    </p>
+                {savedPetId ? (
+                    <div style={{
+                        padding: "16px",
+                        backgroundColor: "#d4edda",
+                        border: "1px solid #c3e6cb",
+                        borderRadius: "8px",
+                        color: "#155724",
+                    }}>
+                        <h3 style={{ margin: "0 0 8px 0" }}>Adoption Successful!</h3>
+                        <p style={{ margin: "0 0 8px 0" }}>
+                            Your pet <strong>{pet.name}</strong> has been adopted!
+                        </p>
+                        <p style={{ margin: "0 0 8px 0", fontSize: "1.1rem" }}>
+                            Pet ID: <strong style={{ fontFamily: "monospace", fontSize: "1.2rem" }}>{savedPetId}</strong>
+                        </p>
+                        <p style={{ margin: "0 0 12px 0", fontSize: "0.9rem", fontStyle: "italic" }}>
+                            Make sure to write down this ID - you'll need it to find your pet!
+                        </p>
+                        <button
+                            onClick={() => navigate(`/view/${savedPetId}`)}
+                            style={{
+                                padding: "10px 20px",
+                                fontSize: "1rem",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                backgroundColor: "#155724",
+                                color: "white",
+                                border: "none",
+                            }}
+                        >
+                            View Your Pet
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        <button onClick={handleSave} disabled={saving}>
+                            {saving ? "Saving..." : "Save Pet"}
+                        </button>
+                        {error && (
+                            <p style={{ color: "red", marginTop: "8px" }}>
+                                {error}
+                            </p>
+                        )}
+                    </>
                 )}
             </div>
         </div>

@@ -11,6 +11,14 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --toast-bg: #333;
+  --toast-color: #fff;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 a {
@@ -65,6 +73,8 @@ button:focus-visible {
   :root {
     color: #213547;
     background-color: #ffffff;
+    --toast-bg: #f0f0f0;
+    --toast-color: #213547;
   }
 
   a:hover {

@@ -68,15 +68,19 @@ function PetModel({ colors, accessory }) {
       const accessoryClone = accessoryGltf.scene.clone();
 
       // Apply scale from accessory settings
-      const scale = accessory.scale || 1.0;
+      // Slider is 0.5 to 1.1, remap to actual scale: 0.5 -> 0.5, 1.1 -> 0.8
+      const sliderVal = accessory.scale || 1.0;
+      const t = Math.max(0, Math.min(1, (sliderVal - 0.5) / (1.1 - 0.5))); // 0 to 1
+      const scale = 0.5 + t * (0.8 - 0.5); // 0.5 to 0.8
       accessoryClone.scale.set(scale, scale, scale);
 
       // Rotation offset (in radians) - tilt forward/back to sit on head properly
       // X = pitch (tilt forward/back), Y = yaw (spin), Z = roll (tilt side)
       accessoryClone.rotation.set(-1, 0, 0);
 
-      // Position offset from head bone
-      accessoryClone.position.set(0, 0.4, -0.8);
+      // Position offset from head bone (Y decreases as scale increases so big hats don't float)
+      const yOffset = 0.35 - (scale - 0.5) * 0.15;
+      accessoryClone.position.set(0, yOffset, -0.75);
 
       headBone.add(accessoryClone);
       accessoryRef.current = accessoryClone;
@@ -256,7 +260,7 @@ export default function PetView() {
   const [saving, setSaving] = useState(false);
 
   // Local accessory state for UI (first accessory in array, or default)
-  const [currentAccessory, setCurrentAccessory] = useState({ type: null, scale: 1.0 });
+  const [currentAccessory, setCurrentAccessory] = useState({ type: null, scale: 0.8 });
 
   useEffect(() => {
     getPetByShortId("demoUser", id)
@@ -365,8 +369,8 @@ export default function PetView() {
             <input
               type="range"
               min="0.5"
-              max="2.0"
-              step="0.1"
+              max="1.1"
+              step="0.05"
               value={currentAccessory.scale}
               onChange={(e) => handleScaleChange(e.target.value)}
               style={{ width: "150px" }}

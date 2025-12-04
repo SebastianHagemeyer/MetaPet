@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
@@ -172,6 +172,7 @@ const randomizeDescription = () => {
         },
         level: 1,
         xp: 0,
+        accessories: [], // Unlocked via leveling, managed in PetView
     });
 
     const userId = "demoUser"; // later: real auth uid

@@ -80,3 +80,18 @@ export async function savePetToDB(userId, petData) {
 
   return { firebaseKey: newPetRef.key, shortId };
 }
+
+export async function updatePetInDB(userId, firebaseKey, updates) {
+  const petRef = ref(db, `users/${userId}/pets/${firebaseKey}`);
+  const snapshot = await get(petRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("Pet not found");
+  }
+
+  const currentData = snapshot.val();
+  const updatedData = { ...currentData, ...updates };
+
+  await set(petRef, updatedData);
+  return updatedData;
+}

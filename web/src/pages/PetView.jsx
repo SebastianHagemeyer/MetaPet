@@ -1,16 +1,93 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Stage, useGLTF, useAnimations, useTexture } from "@react-three/drei";
-import React, { useEffect, useState, useMemo } from "react";
+import { OrbitControls, Stage, useGLTF, useAnimations } from "@react-three/drei";
+import React, { useEffect, useState, useRef } from "react";
 import * as THREE from "three";
 
-import { AnimationUtils } from "three"; // ← add at top
+// Accessory definitions with level requirements
+const ACCESSORIES = [
+  { id: null, name: "None", model: null, levelRequired: 1 },
+  { id: "partyhat", name: "Party Hat", model: "/models/partyhattex.glb", levelRequired: 2 },
+  { id: "wizhat", name: "Wizard Hat", model: "/models/wizhattex.glb", levelRequired: 3 },
+  { id: "spinhat", name: "Spinner Hat", model: "/models/spinhattex.glb", levelRequired: 4 },
+  // { id: "crown", name: "Crown", model: "/models/crown.glb", levelRequired: 5 }, // TODO: add crown model
+];
 
-function PetModel(colors) {
+// Preload accessory models
+ACCESSORIES.forEach(acc => {
+  if (acc.model) useGLTF.preload(acc.model);
+});
+
+function PetModel({ colors, accessory }) {
   const { scene, animations, materials } = useGLTF("/models/thebest.glb");
   const { actions, mixer } = useAnimations(animations, scene);
+  const headBoneRef = useRef(null);
+  const accessoryRef = useRef(null);
 
+  // Load accessory model if selected
+  const accessoryConfig = ACCESSORIES.find(a => a.id === accessory?.type);
+  const accessoryGltf = useGLTF(accessoryConfig?.model || "/models/partyhattex.glb");
 
+  // Find head bone on mount
+  useEffect(() => {
+    scene.traverse((obj) => {
+      if (obj.isBone && (obj.name.toLowerCase().includes("head") || obj.name === "Head")) {
+        headBoneRef.current = obj;
+        console.log("Found head bone:", obj.name);
+      }
+    });
+    // Debug: log all bone names
+    scene.traverse((obj) => {
+      if (obj.isBone) {
+        console.log("Bone:", obj.name);
+      }
+    });
+  }, [scene]);
 
+  // Hide/show tuft based on accessory
+  useEffect(() => {
+    scene.traverse((obj) => {
+      // Check for tuft group or mesh
+      if (obj.name.toLowerCase().includes("tuft")) {
+        obj.visible = !accessory?.type;
+      }
+    });
+  }, [scene, accessory?.type]);
+
+  // Attach/detach accessory to head bone
+  useEffect(() => {
+    const headBone = headBoneRef.current;
+
+    // Remove previous accessory if exists
+    if (accessoryRef.current && accessoryRef.current.parent) {
+      accessoryRef.current.parent.remove(accessoryRef.current);
+      accessoryRef.current = null;
+    }
+
+    // Add new accessory if selected and head bone found
+    if (headBone && accessory?.type && accessoryGltf?.scene) {
+      const accessoryClone = accessoryGltf.scene.clone();
+
+      // Apply scale from accessory settings
+      const scale = accessory.scale || 1.0;
+      accessoryClone.scale.set(scale, scale, scale);
+
+      // Rotation offset (in radians) - tilt forward/back to sit on head properly
+      // X = pitch (tilt forward/back), Y = yaw (spin), Z = roll (tilt side)
+      accessoryClone.rotation.set(-1, 0, 0);
+
+      // Position offset from head bone
+      accessoryClone.position.set(0, 0.4, -0.8);
+
+      headBone.add(accessoryClone);
+      accessoryRef.current = accessoryClone;
+    }
+
+    return () => {
+      if (accessoryRef.current && accessoryRef.current.parent) {
+        accessoryRef.current.parent.remove(accessoryRef.current);
+      }
+    };
+  }, [accessory?.type, accessory?.scale, accessoryGltf?.scene]);
 
   useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
@@ -94,30 +171,20 @@ function PetModel(colors) {
 
 
   useEffect(() => {
-    //console.log("use effect")
-
-
     // APPLY TEXTURES TO MATERIALS
     if (materials.coat) {
-
-      materials.coat.color.set(colors.colors.coat);
-
+      materials.coat.color.set(colors.coat);
       materials.coat.needsUpdate = true;
     }
     if (materials.eye) {
-
-      materials.eye.color.set(colors.colors.eye);
-
+      materials.eye.color.set(colors.eye);
       materials.eye.needsUpdate = true;
     }
     if (materials.snout) {
-      //materials.eyes.map = eyeMap;
-      materials.snout.color.set(colors.colors.snout);
-
+      materials.snout.color.set(colors.snout);
       materials.snout.needsUpdate = true;
     }
-
-  }, [actions, materials, colors]);
+  }, [materials, colors]);
 
   useEffect(() => {
     if (!materials.eye || !materials.eye.map) return;
@@ -180,17 +247,25 @@ function PetModel(colors) {
 
 // src/pages/PetView.jsx
 import { useParams, Navigate } from "react-router-dom";
-import { getPetByShortId } from "/src/api/petsDb";
+import { getPetByShortId, updatePetInDB } from "/src/api/petsDb";
 
 export default function PetView() {
   const { id } = useParams();
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Local accessory state for UI (first accessory in array, or default)
+  const [currentAccessory, setCurrentAccessory] = useState({ type: null, scale: 1.0 });
 
   useEffect(() => {
     getPetByShortId("demoUser", id)
       .then((data) => {
         setPet(data);
+        // Load first accessory from pet data if exists
+        if (data?.accessories?.length > 0) {
+          setCurrentAccessory(data.accessories[0]);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -198,6 +273,33 @@ export default function PetView() {
         setLoading(false);
       });
   }, [id]);
+
+  // Get accessories unlocked at current level
+  const unlockedAccessories = ACCESSORIES.filter(acc => acc.levelRequired <= (pet?.level || 1));
+
+  const handleAccessoryChange = (accessoryId) => {
+    setCurrentAccessory(prev => ({ ...prev, type: accessoryId }));
+  };
+
+  const handleScaleChange = (scale) => {
+    setCurrentAccessory(prev => ({ ...prev, scale: parseFloat(scale) }));
+  };
+
+  const handleSaveAccessory = async () => {
+    if (!pet) return;
+    setSaving(true);
+    try {
+      const newAccessories = currentAccessory.type
+        ? [currentAccessory]
+        : [];
+      await updatePetInDB("demoUser", pet.id, { accessories: newAccessories });
+      setPet(prev => ({ ...prev, accessories: newAccessories }));
+    } catch (err) {
+      console.error("Failed to save accessory:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) {
     return <div className="page">Loading...</div>;
@@ -216,49 +318,115 @@ export default function PetView() {
 
       <Canvas key="special" shadows camera={{ position: [0, 0, 1], fov: 40 }}>
         <Stage environment="city" intensity={0.7} adjustCamera={false} shadows={false}>
-          <PetModel colors={pet.colors} />
+          <PetModel colors={pet.colors} accessory={currentAccessory} />
         </Stage>
         <OrbitControls enablePan={false} minDistance={2} maxDistance={4} />
       </Canvas>
 
+      {/* Accessory Controls */}
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "12px",
+        padding: "16px",
+        marginTop: "8px"
+      }}>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+          {ACCESSORIES.map(acc => {
+            const isUnlocked = acc.levelRequired <= pet.level;
+            const isSelected = currentAccessory.type === acc.id;
+            return (
+              <button
+                key={acc.id || "none"}
+                onClick={() => isUnlocked && handleAccessoryChange(acc.id)}
+                disabled={!isUnlocked}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  border: isSelected ? "2px solid #4ade80" : "1px solid #555",
+                  background: isSelected ? "rgba(74, 222, 128, 0.2)" : "rgba(255,255,255,0.1)",
+                  color: isUnlocked ? "#fff" : "#666",
+                  cursor: isUnlocked ? "pointer" : "not-allowed",
+                  opacity: isUnlocked ? 1 : 0.5,
+                }}
+              >
+                {acc.name}
+                {!isUnlocked && ` (Lvl ${acc.levelRequired})`}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Size slider - only show if accessory selected */}
+        {currentAccessory.type && (
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <label style={{ color: "#aaa" }}>Size:</label>
+            <input
+              type="range"
+              min="0.5"
+              max="2.0"
+              step="0.1"
+              value={currentAccessory.scale}
+              onChange={(e) => handleScaleChange(e.target.value)}
+              style={{ width: "150px" }}
+            />
+            <span style={{ color: "#fff", minWidth: "40px" }}>{currentAccessory.scale.toFixed(1)}x</span>
+          </div>
+        )}
+
+        {/* Save button */}
+        <button
+          onClick={handleSaveAccessory}
+          disabled={saving}
+          style={{
+            padding: "10px 24px",
+            borderRadius: "6px",
+            background: "#4ade80",
+            color: "#000",
+            border: "none",
+            cursor: saving ? "wait" : "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          {saving ? "Saving..." : "Save Accessory"}
+        </button>
+      </div>
 
       {/* bottom cluster as ONE block */}
-<div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 0,           // no flex gap between children
-    paddingBottom: "50px"
-  }}
->
-  <p style={{ margin: 0 }}>Level {pet.level}</p>
-  <p style={{ margin: 0 }}>{Math.round(pet.xp * 100)}%</p>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 0,
+          paddingBottom: "50px"
+        }}
+      >
+        <p style={{ margin: 0 }}>Level {pet.level}</p>
+        <p style={{ margin: 0 }}>{Math.round(pet.xp * 100)}%</p>
 
-  <div
-    style={{
-      width: "350px",
-      maxWidth: "100%",
-      height: "14px",
-      borderRadius: "999px",
-      background: "rgba(255,255,255,0.15)",
-      overflow: "hidden",
-      margin: 0,      // just to be explicit
-    }}
-  >
-    <div
-      style={{
-        width: `${pet.xp * 100}%`,
-        height: "100%",
-        background: "#4ade80",
-        borderRadius: "999px",
-      }}
-    />
-  </div>
-</div>
-
-
-
+        <div
+          style={{
+            width: "350px",
+            maxWidth: "100%",
+            height: "14px",
+            borderRadius: "999px",
+            background: "rgba(255,255,255,0.15)",
+            overflow: "hidden",
+            margin: 0,
+          }}
+        >
+          <div
+            style={{
+              width: `${pet.xp * 100}%`,
+              height: "100%",
+              background: "#4ade80",
+              borderRadius: "999px",
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }

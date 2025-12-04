@@ -5,7 +5,8 @@ import { useState, useEffect } from "react";
 import PetThumbnailCanvas from "./PetThumbnailCanvas";
 
 export default function PetPreview({ pet }) {
-  const { id, shortId, name, description, colors } = pet;
+  const { id, shortId, name, description, colors, accessories } = pet;
+  const accessory = accessories?.length > 0 ? accessories[0] : null;
   const [thumb, setThumb] = useState(null);
   const [showToast, setShowToast] = useState(false);
 
@@ -73,7 +74,7 @@ export default function PetPreview({ pet }) {
             }}
           />
         ) : (
-          <PetThumbnailCanvas colors={colors} onReady={setThumb} />
+          <PetThumbnailCanvas colors={colors} accessory={accessory} onReady={setThumb} />
         )}
       </div>
 

@@ -2,26 +2,14 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF, useAnimations } from "@react-three/drei";
 import React, { useEffect, useState, useRef } from "react";
 import * as THREE from "three";
-
-// Accessory definitions with level requirements
-const ACCESSORIES = [
-  { id: null, name: "None", model: null, levelRequired: 1 },
-  { id: "partyhat", name: "Party Hat", model: "/models/partyhattex.glb", levelRequired: 2 },
-  { id: "wizhat", name: "Wizard Hat", model: "/models/wizhattex.glb", levelRequired: 3 },
-  { id: "spinhat", name: "Spinner Hat", model: "/models/spinhattex.glb", levelRequired: 4 },
-  // { id: "crown", name: "Crown", model: "/models/crown.glb", levelRequired: 5 }, // TODO: add crown model
-];
-
-// Preload accessory models
-ACCESSORIES.forEach(acc => {
-  if (acc.model) useGLTF.preload(acc.model);
-});
+import { ACCESSORIES } from "/src/components/PetModel";
 
 function PetModel({ colors, accessory }) {
   const { scene, animations, materials } = useGLTF("/models/thebest.glb");
   const { actions, mixer } = useAnimations(animations, scene);
   const headBoneRef = useRef(null);
   const accessoryRef = useRef(null);
+  const spinnerRef = useRef(null);
 
   // Load accessory model if selected
   const accessoryConfig = ACCESSORIES.find(a => a.id === accessory?.type);
@@ -74,6 +62,25 @@ function PetModel({ colors, accessory }) {
       const scale = 0.5 + t * (0.8 - 0.5); // 0.5 to 0.8
       accessoryClone.scale.set(scale, scale, scale);
 
+      // Apply accessory colors and find spinner part
+      spinnerRef.current = null;
+      accessoryClone.traverse((obj) => {
+        // Look for the spinning part (check for common names)
+        if (obj.name.toLowerCase().includes("spin") || obj.name.toLowerCase().includes("top") || obj.name.toLowerCase().includes("propeller")) {
+          spinnerRef.current = obj;
+        }
+        if (obj.isMesh && obj.material) {
+          const mat = obj.material.clone();
+          if (mat.name === "ass1" && accessory.ass1) {
+            mat.color.set(accessory.ass1);
+          }
+          if (mat.name === "ass2" && accessory.ass2) {
+            mat.color.set(accessory.ass2);
+          }
+          obj.material = mat;
+        }
+      });
+
       // Rotation offset (in radians) - tilt forward/back to sit on head properly
       // X = pitch (tilt forward/back), Y = yaw (spin), Z = roll (tilt side)
       accessoryClone.rotation.set(-1, 0, 0);
@@ -91,7 +98,7 @@ function PetModel({ colors, accessory }) {
         accessoryRef.current.parent.remove(accessoryRef.current);
       }
     };
-  }, [accessory?.type, accessory?.scale, accessoryGltf?.scene]);
+  }, [accessory?.type, accessory?.scale, accessory?.ass1, accessory?.ass2, accessoryGltf?.scene]);
 
   useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
@@ -217,8 +224,13 @@ function PetModel({ colors, accessory }) {
   }); */
 
 
-  // Move pupil with mouse
-  useFrame(({ pointer }) => {
+  // Move pupil with mouse + rotate spinner
+  useFrame(({ pointer }, delta) => {
+    // Rotate spinner part if present
+    if (spinnerRef.current) {
+      spinnerRef.current.rotation.y += delta * 3;
+    }
+
     if (!materials.eye || !materials.eye.map) return;
 
     const map = materials.eye.map;
@@ -260,7 +272,8 @@ export default function PetView() {
   const [saving, setSaving] = useState(false);
 
   // Local accessory state for UI (first accessory in array, or default)
-  const [currentAccessory, setCurrentAccessory] = useState({ type: null, scale: 0.8 });
+  const [currentAccessory, setCurrentAccessory] = useState({ type: null, scale: 0.8, ass1: "#008EFF", ass2: "#ffff00" });
+  const [accessoriesExpanded, setAccessoriesExpanded] = useState(false);
 
   useEffect(() => {
     getPetByShortId("demoUser", id)
@@ -287,6 +300,40 @@ export default function PetView() {
 
   const handleScaleChange = (scale) => {
     setCurrentAccessory(prev => ({ ...prev, scale: parseFloat(scale) }));
+  };
+
+  const handleAccessoryColorChange = (key, value) => {
+    setCurrentAccessory(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Randomize accessory colors
+  const randomHex = (brightness = 0.5) => {
+    brightness = Math.min(1, Math.max(0, brightness));
+    let r = Math.random() * 255;
+    let g = Math.random() * 255;
+    let b = Math.random() * 255;
+    if (brightness < 0.5) {
+      const factor = brightness / 0.5;
+      r *= factor;
+      g *= factor;
+      b *= factor;
+    } else if (brightness > 0.5) {
+      const factor = (brightness - 0.5) / 0.5;
+      r = r + (255 - r) * factor;
+      g = g + (255 - g) * factor;
+      b = b + (255 - b) * factor;
+    }
+    return "#" + Math.floor(r).toString(16).padStart(2, "0") +
+                 Math.floor(g).toString(16).padStart(2, "0") +
+                 Math.floor(b).toString(16).padStart(2, "0");
+  };
+
+  const randomizeAccessoryColors = () => {
+    setCurrentAccessory(prev => ({
+      ...prev,
+      ass1: randomHex(0.6),
+      ass2: randomHex(0.6),
+    }));
   };
 
   const handleSaveAccessory = async () => {
@@ -327,75 +374,152 @@ export default function PetView() {
         <OrbitControls enablePan={false} minDistance={2} maxDistance={4} />
       </Canvas>
 
-      {/* Accessory Controls */}
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "12px",
-        padding: "16px",
-        marginTop: "8px"
-      }}>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
-          {ACCESSORIES.map(acc => {
-            const isUnlocked = acc.levelRequired <= pet.level;
-            const isSelected = currentAccessory.type === acc.id;
-            return (
-              <button
-                key={acc.id || "none"}
-                onClick={() => isUnlocked && handleAccessoryChange(acc.id)}
-                disabled={!isUnlocked}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "6px",
-                  border: isSelected ? "2px solid #4ade80" : "1px solid #555",
-                  background: isSelected ? "rgba(74, 222, 128, 0.2)" : "rgba(255,255,255,0.1)",
-                  color: isUnlocked ? "#fff" : "#666",
-                  cursor: isUnlocked ? "pointer" : "not-allowed",
-                  opacity: isUnlocked ? 1 : 0.5,
-                }}
-              >
-                {acc.name}
-                {!isUnlocked && ` (Lvl ${acc.levelRequired})`}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Size slider - only show if accessory selected */}
-        {currentAccessory.type && (
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <label style={{ color: "#aaa" }}>Size:</label>
-            <input
-              type="range"
-              min="0.5"
-              max="1.1"
-              step="0.05"
-              value={currentAccessory.scale}
-              onChange={(e) => handleScaleChange(e.target.value)}
-              style={{ width: "150px" }}
-            />
-            <span style={{ color: "#fff", minWidth: "40px" }}>{currentAccessory.scale.toFixed(1)}x</span>
-          </div>
-        )}
-
-        {/* Save button */}
+      {/* Accessories Toggle Button */}
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
         <button
-          onClick={handleSaveAccessory}
-          disabled={saving}
+          onClick={() => setAccessoriesExpanded(!accessoriesExpanded)}
           style={{
-            padding: "10px 24px",
+            padding: "10px 20px",
             borderRadius: "6px",
-            background: "#4ade80",
-            color: "#000",
-            border: "none",
-            cursor: saving ? "wait" : "pointer",
-            fontWeight: "bold",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
           }}
         >
-          {saving ? "Saving..." : "Save Accessory"}
+          Accessories
+          <span style={{
+            display: "inline-block",
+            transition: "transform 0.2s ease",
+            transform: accessoriesExpanded ? "rotate(180deg)" : "rotate(0deg)"
+          }}>
+            ▼
+          </span>
         </button>
       </div>
+
+      {/* Accessory Controls - Collapsible */}
+      {accessoriesExpanded && (
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "12px",
+          padding: "16px",
+        }}>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+            {ACCESSORIES.map(acc => {
+              const isUnlocked = acc.levelRequired <= pet.level;
+              const isSelected = currentAccessory.type === acc.id;
+              return (
+                <button
+                  key={acc.id || "none"}
+                  onClick={() => isUnlocked && handleAccessoryChange(acc.id)}
+                  disabled={!isUnlocked}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    border: isSelected ? "2px solid #4ade80" : "1px solid #555",
+                    background: isSelected ? "rgba(74, 222, 128, 0.2)" : "rgba(255,255,255,0.1)",
+                    cursor: isUnlocked ? "pointer" : "not-allowed",
+                    opacity: isUnlocked ? 1 : 0.5,
+                  }}
+                >
+                  {acc.name}
+                  {!isUnlocked && ` (Lvl ${acc.levelRequired})`}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Size slider - only show if accessory selected */}
+          {currentAccessory.type && (
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <label>Size:</label>
+              <input
+                type="range"
+                min="0.5"
+                max="1.1"
+                step="0.05"
+                value={currentAccessory.scale}
+                onChange={(e) => handleScaleChange(e.target.value)}
+                style={{ width: "150px" }}
+              />
+              <span style={{ minWidth: "40px" }}>{currentAccessory.scale.toFixed(1)}x</span>
+            </div>
+          )}
+
+          {/* Accessory color pickers - only show if accessory selected */}
+          {currentAccessory.type && (
+            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+              {/* Randomize button */}
+              <button
+                onClick={randomizeAccessoryColors}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: "1rem",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  height: "40px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                Randomize
+              </button>
+
+              {/* ass1 color */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <label style={{ cursor: "pointer" }}>
+                  <div
+                    className="colorSquare"
+                    style={{ backgroundColor: currentAccessory.ass1 }}
+                  />
+                  <input
+                    type="color"
+                    value={currentAccessory.ass1}
+                    onChange={(e) => handleAccessoryColorChange("ass1", e.target.value)}
+                    className="hiddenColorInput"
+                  />
+                </label>
+              </div>
+
+              {/* ass2 color */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <label style={{ cursor: "pointer" }}>
+                  <div
+                    className="colorSquare"
+                    style={{ backgroundColor: currentAccessory.ass2 }}
+                  />
+                  <input
+                    type="color"
+                    value={currentAccessory.ass2}
+                    onChange={(e) => handleAccessoryColorChange("ass2", e.target.value)}
+                    className="hiddenColorInput"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Save button */}
+          <button
+            onClick={handleSaveAccessory}
+            disabled={saving}
+            style={{
+              padding: "10px 24px",
+              borderRadius: "6px",
+              background: "#4ade80",
+              color: "#000",
+              border: "none",
+              cursor: saving ? "wait" : "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            {saving ? "Saving..." : "Save Accessory"}
+          </button>
+        </div>
+      )}
 
       {/* bottom cluster as ONE block */}
       <div
@@ -416,7 +540,7 @@ export default function PetView() {
             maxWidth: "100%",
             height: "14px",
             borderRadius: "999px",
-            background: "rgba(255,255,255,0.15)",
+            background: "rgba(128,128,128,0.25)",
             overflow: "hidden",
             margin: 0,
           }}

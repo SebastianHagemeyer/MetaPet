@@ -7,6 +7,7 @@ import About from '/src/pages/About.jsx'
 import Adopt from '/src/pages/Adopt.jsx'
 import Petz from '/src/pages/Petz.jsx'
 import PetView from '/src/pages/PetView.jsx'
+import Promo from '/src/pages/Promo.jsx'
 import '/src/index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -26,6 +27,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="petz" element={<Petz />} />
 
           <Route path="view/:id" element={<PetView />} />
+          <Route path="promo" element={<Promo />} />
 
           {/* 404 fallback */}
           <Route path="*" element={<h1>404 – Page not found</h1>} />

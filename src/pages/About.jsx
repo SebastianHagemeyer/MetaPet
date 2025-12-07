@@ -41,13 +41,13 @@ export default function About() {
                 <div className="more-item">
                     <h3>A* Pathfinding</h3>
                     <p>Custom A* pathfinding algorithm allows pets to navigate around real-world obstacles in AR.</p>
-                    {/* <img src="/gifs/pathfinding.gif" alt="A* Pathfinding demo" /> */}
+                    <img src="/gifs/pathfinding.gif" alt="A* Pathfinding demo" />
                 </div>
 
                 <div className="more-item">
                     <h3>3D Navigation Map</h3>
                     <p>Real-time 3D navigation mesh built from room scanning, enabling intelligent pet movement.</p>
-                    {/* <img src="/gifs/navigation-map.gif" alt="3D Navigation Map demo" /> */}
+                    <img src="/gifs/navigation-map.gif" alt="3D Navigation Map demo" />
                 </div>
 
                 <div className="more-item">

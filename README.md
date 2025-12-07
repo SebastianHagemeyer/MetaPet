@@ -22,12 +22,12 @@ Unlock and equip accessories as your pet levels up. Customize colors and sizes.
 ### A* Pathfinding (AR)
 Custom A* pathfinding algorithm allows pets to navigate around real-world obstacles in AR.
 
-<!-- ![A* Pathfinding](assets/gifs/pathfinding.gif) -->
+![A* Pathfinding](public/gifs/pathfinding.gif)
 
 ### 3D Navigation Map (AR)
 Real-time 3D navigation mesh built from room scanning, enabling intelligent pet movement.
 
-<!-- ![Navigation Map](assets/gifs/navigation-map.gif) -->
+![Navigation Map](public/gifs/navigation-map.gif)
 
 ### Hand Tracking Interactions (AR)
 Interact with your pet using Meta Quest hand tracking - pet, feed, and play with natural gestures.

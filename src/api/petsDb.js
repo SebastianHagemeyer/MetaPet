@@ -95,3 +95,52 @@ export async function updatePetInDB(userId, firebaseKey, updates) {
   await set(petRef, updatedData);
   return updatedData;
 }
+
+// --- IP-based adoption limiting ---
+
+// Get user's IP from external service
+export async function getUserIP() {
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    return data.ip;
+  } catch (err) {
+    console.error("Failed to get IP:", err);
+    return null;
+  }
+}
+
+// Hash IP to avoid storing raw IPs (basic privacy)
+function hashIP(ip) {
+  let hash = 0;
+  for (let i = 0; i < ip.length; i++) {
+    const char = ip.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return "ip_" + Math.abs(hash).toString(16);
+}
+
+// Check if an IP has already adopted
+export async function hasIPAdopted(ip) {
+  if (!ip) return false;
+
+  const hashedIP = hashIP(ip);
+  const ipRef = ref(db, `adoptedIPs/${hashedIP}`);
+  const snapshot = await get(ipRef);
+
+  return snapshot.exists();
+}
+
+// Record that an IP has adopted
+export async function recordIPAdoption(ip, shortId) {
+  if (!ip) return;
+
+  const hashedIP = hashIP(ip);
+  const ipRef = ref(db, `adoptedIPs/${hashedIP}`);
+
+  await set(ipRef, {
+    adoptedAt: Date.now(),
+    petShortId: shortId,
+  });
+}

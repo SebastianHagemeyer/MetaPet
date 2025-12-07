@@ -4,7 +4,7 @@ import { OrbitControls, Stage, useGLTF, useAnimations } from "@react-three/drei"
 import * as THREE from "three";
 import { useNavigate } from "react-router-dom";
 
-import { savePetToDB } from "/src/api/petsDb";
+import { savePetToDB, getUserIP, hasIPAdopted, recordIPAdoption } from "/src/api/petsDb";
 
 import randomIcon from "/src/assets/random.svg";
 
@@ -139,6 +139,23 @@ export default function Adopt() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
     const [savedPetId, setSavedPetId] = useState(null);
+    const [userIP, setUserIP] = useState(null);
+    const [alreadyAdopted, setAlreadyAdopted] = useState(false);
+    const [checkingIP, setCheckingIP] = useState(true);
+
+    // Check IP on mount
+    useEffect(() => {
+        async function checkIP() {
+            const ip = await getUserIP();
+            setUserIP(ip);
+            if (ip) {
+                const adopted = await hasIPAdopted(ip);
+                setAlreadyAdopted(adopted);
+            }
+            setCheckingIP(false);
+        }
+        checkIP();
+    }, []);
 
 
     const randomizeName = () => {
@@ -230,8 +247,25 @@ const randomizeDescription = () => {
         setSaving(true);
         setError(null);
         try {
+            // Double-check IP hasn't adopted (in case they sat on the page)
+            if (userIP) {
+                const adopted = await hasIPAdopted(userIP);
+                if (adopted) {
+                    setAlreadyAdopted(true);
+                    setError("You've already adopted a pet from this device.");
+                    setSaving(false);
+                    return;
+                }
+            }
+
             const result = await savePetToDB(userId, pet);
             console.log("Saved pet with key:", result);
+
+            // Record IP after successful adoption
+            if (userIP) {
+                await recordIPAdoption(userIP, result.shortId);
+            }
+
             setSavedPetId(result.shortId);
         } catch (e) {
             console.error(e);
@@ -240,6 +274,49 @@ const randomizeDescription = () => {
             setSaving(false);
         }
     };
+
+    if (checkingIP) {
+        return (
+            <div className="page">
+                <h1>Adopt</h1>
+                <p>Loading...</p>
+            </div>
+        );
+    }
+
+    if (alreadyAdopted && !savedPetId) {
+        return (
+            <div className="page">
+                <h1>Adopt</h1>
+                <div style={{
+                    padding: "16px",
+                    backgroundColor: "#fff3cd",
+                    border: "1px solid #ffc107",
+                    borderRadius: "8px",
+                    color: "#856404",
+                }}>
+                    <h3 style={{ margin: "0 0 8px 0" }}>Already Adopted</h3>
+                    <p style={{ margin: "0 0 12px 0" }}>
+                        You've already adopted a pet from this device. Each device can only adopt one pet.
+                    </p>
+                    <button
+                        onClick={() => navigate("/")}
+                        style={{
+                            padding: "10px 20px",
+                            fontSize: "1rem",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            backgroundColor: "#856404",
+                            color: "white",
+                            border: "none",
+                        }}
+                    >
+                        Back
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="page">

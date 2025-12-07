@@ -2,6 +2,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF, useAnimations } from "@react-three/drei";
 import React, { useEffect, useState, useRef } from "react";
 import * as THREE from "three";
+import QRCode from "react-qr-code";
 import { ACCESSORIES } from "/src/components/PetModel";
 
 function PetModel({ colors, accessory }) {
@@ -274,6 +275,11 @@ export default function PetView() {
   // Local accessory state for UI (first accessory in array, or default)
   const [currentAccessory, setCurrentAccessory] = useState({ type: null, scale: 0.8, ass1: "#008EFF", ass2: "#ffff00" });
   const [accessoriesExpanded, setAccessoriesExpanded] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/view/${id}`
+      : `/view/${id}`;
 
   useEffect(() => {
     getPetByShortId("demoUser", id)
@@ -374,8 +380,8 @@ export default function PetView() {
         <OrbitControls enablePan={false} minDistance={2} maxDistance={4} />
       </Canvas>
 
-      {/* Accessories Toggle Button */}
-      <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
+      {/* Accessories Toggle Button + Share */}
+      <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "8px" }}>
         <button
           onClick={() => setAccessoriesExpanded(!accessoriesExpanded)}
           style={{
@@ -395,6 +401,16 @@ export default function PetView() {
           }}>
             ▼
           </span>
+        </button>
+        <button
+          onClick={() => setShowShare(true)}
+          style={{
+            padding: "10px 20px",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          Share
         </button>
       </div>
 
@@ -555,6 +571,51 @@ export default function PetView() {
           />
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShare && (
+        <div
+          className="share-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowShare(false)}
+        >
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal__header">
+              <h3>Share This Pet</h3>
+              <button
+                className="share-modal__close"
+                onClick={() => setShowShare(false)}
+                aria-label="Close share dialog"
+              >
+                ×
+              </button>
+            </div>
+            <p className="share-modal__sub">
+              Scan to view in VR headset or open the link in any browser to see this pet.
+            </p>
+            <div className="share-modal__qr">
+              <QRCode value={shareUrl} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
+              <div className="share-modal__id">Pet ID: {id}</div>
+            </div>
+            <div className="share-modal__actions">
+              <input className="share-modal__link" value={shareUrl} readOnly />
+              <button
+                className="share-modal__button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(shareUrl);
+                  } catch (err) {
+                    console.error("Failed to copy:", err);
+                  }
+                }}
+              >
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

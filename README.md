@@ -23,6 +23,11 @@ MetaPetz is a mixed-reality pet experience built for Meta Quest. This web applic
 
 ### Pet View Page
 - View individual pet details with full 3D model
+- **Share Modal**:
+  - QR code for easy sharing to VR headsets
+  - Displays unique pet ID
+  - Copy link button for quick sharing
+  - Scannable from any device
 - **Collapsible Accessories Panel**:
   - Select from unlockable accessories (Party Hat, Wizard Hat, Spinner Hat)
   - Accessories unlock based on pet level

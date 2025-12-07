@@ -236,21 +236,31 @@ function PetModel({ colors, accessory }) {
 
     const map = materials.eye.map;
 
-    // pointer.x / pointer.y are roughly -1..1
-    const px = THREE.MathUtils.clamp(pointer.x, -1, 1);
-    const py = THREE.MathUtils.clamp(pointer.y, -1, 1);
-
     // How far the iris can move in UV space
     const maxOffsetX = 0.02; // small, or it will slide off the sclera
     const maxOffsetY = 0.02;
 
+    // Threshold - if pointer goes beyond this, start returning to center
+    const threshold = 0.8;
+    const isOutside = Math.abs(pointer.x) > threshold || Math.abs(pointer.y) > threshold;
 
-    var offX = px * maxOffsetX
-    var offY = py * maxOffsetY
-    materials.eye.map.offset.y = offY
-    materials.eye.map.offset.x = -offX
+    let targetX, targetY;
+    if (isOutside) {
+      // Tween back to center
+      targetX = 0;
+      targetY = 0;
+    } else {
+      // Follow the pointer (scale to use full range within threshold)
+      const px = pointer.x / threshold;
+      const py = pointer.y / threshold;
+      targetX = -px * maxOffsetX;
+      targetY = py * maxOffsetY;
+    }
 
-    // map.needsUpdate = true; // usually not needed every frame, but safe if glitchy
+    // Lerp for smooth transition
+    const lerpSpeed = 5 * delta;
+    map.offset.x = THREE.MathUtils.lerp(map.offset.x, targetX, lerpSpeed);
+    map.offset.y = THREE.MathUtils.lerp(map.offset.y, targetY, lerpSpeed);
   });
 
   return <primitive object={scene} scale={0.6} />;

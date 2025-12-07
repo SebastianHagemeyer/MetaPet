@@ -111,22 +111,35 @@ function PetModel({ colors }) {
     }, [materials]);
 
     // --- Move pupil with mouse ---
-    useFrame(({ pointer }) => {
+    useFrame(({ pointer }, delta) => {
         if (!materials.eye || !materials.eye.map) return;
 
         const map = materials.eye.map;
 
-        const px = THREE.MathUtils.clamp(pointer.x, -1, 1);
-        const py = THREE.MathUtils.clamp(pointer.y, -1, 1);
-
         const maxOffsetX = 0.02;
         const maxOffsetY = 0.02;
 
-        const offX = px * maxOffsetX;
-        const offY = py * maxOffsetY;
+        // Threshold - if pointer goes beyond this, start returning to center
+        const threshold = 0.8;
+        const isOutside = Math.abs(pointer.x) > threshold || Math.abs(pointer.y) > threshold;
 
-        map.offset.y = offY;
-        map.offset.x = -offX;
+        let targetX, targetY;
+        if (isOutside) {
+            // Tween back to center
+            targetX = 0;
+            targetY = 0;
+        } else {
+            // Follow the pointer (scale to use full range within threshold)
+            const px = pointer.x / threshold;
+            const py = pointer.y / threshold;
+            targetX = -px * maxOffsetX;
+            targetY = py * maxOffsetY;
+        }
+
+        // Lerp for smooth transition
+        const lerpSpeed = 5 * delta;
+        map.offset.x = THREE.MathUtils.lerp(map.offset.x, targetX, lerpSpeed);
+        map.offset.y = THREE.MathUtils.lerp(map.offset.y, targetY, lerpSpeed);
     });
 
     return <primitive object={scene} scale={0.6} />;

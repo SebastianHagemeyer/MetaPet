@@ -51,27 +51,9 @@ export default function About() {
                 </div>
 
                 <div className="more-item">
-                    <h3>Hand Tracking Interactions</h3>
-                    <p>Interact with your pet using Meta Quest hand tracking - pet, feed, and play with natural gestures.</p>
-                    {/* <img src="/gifs/hand-tracking.gif" alt="Hand Tracking demo" /> */}
-                </div>
-
-                <div className="more-item">
-                    <h3>Eye Tracking</h3>
-                    <p>Pet's eyes follow your cursor or gaze for a more lifelike experience.</p>
-                    {/* <img src="/gifs/eye-tracking.gif" alt="Eye Tracking demo" /> */}
-                </div>
-
-                <div className="more-item">
-                    <h3>Share Modal & QR Code</h3>
-                    <p>Share your pet via QR code for easy access on VR headsets and mobile devices.</p>
-                    {/* <img src="/gifs/share-modal.gif" alt="Share Modal demo" /> */}
-                </div>
-
-                <div className="more-item">
                     <h3>Accessory System</h3>
                     <p>Unlock and equip accessories as your pet levels up. Customize colors and sizes.</p>
-                    {/* <img src="/gifs/accessories.gif" alt="Accessories demo" /> */}
+                    <img src="/gifs/accessories.gif" alt="Accessories demo" />
                 </div>
             </div>
         </div>

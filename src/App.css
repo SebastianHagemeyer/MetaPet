@@ -100,6 +100,7 @@
   border-radius: 14px;
   padding: 1.25rem;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  animation: share-pop 0.18s ease-out;
 }
 
 .share-modal__header {
@@ -197,5 +198,16 @@
 
   .share-modal__button {
     color: #0b1a2f;
+  }
+}
+
+@keyframes share-pop {
+  from {
+    transform: translateY(6px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
   }
 }

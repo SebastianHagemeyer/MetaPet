@@ -11,6 +11,10 @@ export default function PetPreview({ pet }) {
   const [thumb, setThumb] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/view/${shortId}`
+      : `/view/${shortId}`;
 
   useEffect(() => {
     if (showToast) {
@@ -18,8 +22,6 @@ export default function PetPreview({ pet }) {
       return () => clearTimeout(timer);
     }
   }, [showToast]);
-
-  const shareUrl = `${window.location.origin}/view/${shortId}`;
 
   const handleShare = async () => {
     setShowShare(true);
@@ -133,7 +135,7 @@ export default function PetPreview({ pet }) {
               </button>
             </div>
             <p className="share-modal__sub">
-              Scan or copy the link to view this pet. QR encodes the share URL.
+              Scan to view in VR headset or open the link in any browser to see this pet.
             </p>
             <div className="share-modal__qr">
               <QRCode value={shareUrl} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />

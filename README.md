@@ -2,6 +2,25 @@
 
 MetaPetz is a mixed-reality pet experience built for Meta Quest. This web application serves as the companion portal where users can adopt, customize, and manage their virtual pets before interacting with them in AR.
 
+## Demo
+
+### A* Pathfinding (AR)
+Custom A* pathfinding algorithm allows pets to navigate around real-world obstacles in AR.
+
+![A* Pathfinding](public/gifs/pathfinding.gif)
+
+### 3D Navigation Map (AR)
+Real-time 3D navigation mesh built from room scanning, enabling intelligent pet movement.
+
+![Navigation Map](public/gifs/navigation-map.gif)
+
+### Accessory System
+Unlock and equip accessories as your pet levels up. Customize colors and sizes.
+
+![Accessories](public/gifs/accessories.gif)
+
+---
+
 ## Features
 
 ### Home Page

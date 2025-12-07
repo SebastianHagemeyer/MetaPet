@@ -211,3 +211,43 @@
     opacity: 1;
   }
 }
+
+/* More section on About page */
+.more-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.more-item {
+  background: #1e1e1e;
+  border: 1px solid #2e2e2e;
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: left;
+}
+
+.more-item h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.more-item p {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+.more-item img {
+  width: 100%;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+@media (prefers-color-scheme: light) {
+  .more-item {
+    background: #f6f7f9;
+    border-color: #e5e7eb;
+  }
+}

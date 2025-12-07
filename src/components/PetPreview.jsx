@@ -2,6 +2,7 @@
 //renamed test
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import QRCode from "react-qr-code";
 import PetThumbnailCanvas from "./PetThumbnailCanvas";
 
 export default function PetPreview({ pet }) {
@@ -9,6 +10,11 @@ export default function PetPreview({ pet }) {
   const accessory = accessories?.length > 0 ? accessories[0] : null;
   const [thumb, setThumb] = useState(null);
   const [showToast, setShowToast] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/view/${shortId}`
+      : `/view/${shortId}`;
 
   useEffect(() => {
     if (showToast) {
@@ -18,7 +24,7 @@ export default function PetPreview({ pet }) {
   }, [showToast]);
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/share/${shortId}`;
+    setShowShare(true);
     try {
       await navigator.clipboard.writeText(shareUrl);
       setShowToast(true);
@@ -109,6 +115,41 @@ export default function PetPreview({ pet }) {
           Share
         </button>
       </div>
+
+      {showShare && (
+        <div
+          className="share-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowShare(false)}
+        >
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal__header">
+              <h3>Share This Pet</h3>
+              <button
+                className="share-modal__close"
+                onClick={() => setShowShare(false)}
+                aria-label="Close share dialog"
+              >
+                ×
+              </button>
+            </div>
+            <p className="share-modal__sub">
+              Scan to view in VR headset or open the link in any browser to see this pet.
+            </p>
+            <div className="share-modal__qr">
+              <QRCode value={shareUrl} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
+              <div className="share-modal__id">Pet ID: {shortId}</div>
+            </div>
+            <div className="share-modal__actions">
+              <input className="share-modal__link" value={shareUrl} readOnly />
+              <button className="share-modal__button" onClick={handleShare}>
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

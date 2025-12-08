@@ -146,11 +146,41 @@
   opacity: 0.85;
 }
 
+.share-modal__id--clickable {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.share-modal__id--clickable:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
 .share-modal__actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.6rem;
   margin-top: 1rem;
+}
+
+.share-modal__actions .share-modal__button {
+  flex: 1;
+}
+
+.share-modal__toast {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: #333;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .share-modal__link {

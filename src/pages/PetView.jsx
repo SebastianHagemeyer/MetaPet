@@ -286,10 +286,18 @@ export default function PetView() {
   const [currentAccessory, setCurrentAccessory] = useState({ type: null, scale: 0.8, ass1: "#008EFF", ass2: "#ffff00" });
   const [accessoriesExpanded, setAccessoriesExpanded] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
   const shareUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/view/${id}`
       : `/view/${id}`;
+
+  useEffect(() => {
+    if (toastMsg) {
+      const timer = setTimeout(() => setToastMsg(""), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMsg]);
 
   useEffect(() => {
     getPetByShortId("demoUser", id)
@@ -606,7 +614,19 @@ export default function PetView() {
             </p>
             <div className="share-modal__qr">
               <QRCode value={shareUrl} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
-              <div className="share-modal__id">Pet ID: {id}</div>
+              <div
+                className="share-modal__id share-modal__id--clickable"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(id);
+                    setToastMsg("Code copied!");
+                  } catch (err) {
+                    console.error("Failed to copy:", err);
+                  }
+                }}
+              >
+                Pet ID: {id}
+              </div>
             </div>
             <div className="share-modal__actions">
               <input className="share-modal__link" value={shareUrl} readOnly />
@@ -615,6 +635,7 @@ export default function PetView() {
                 onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(shareUrl);
+                    setToastMsg("Link copied!");
                   } catch (err) {
                     console.error("Failed to copy:", err);
                   }
@@ -622,7 +643,23 @@ export default function PetView() {
               >
                 Copy Link
               </button>
+              <button
+                className="share-modal__button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(id);
+                    setToastMsg("Code copied!");
+                  } catch (err) {
+                    console.error("Failed to copy:", err);
+                  }
+                }}
+              >
+                Copy Code
+              </button>
             </div>
+            {toastMsg && (
+              <div className="share-modal__toast">{toastMsg}</div>
+            )}
           </div>
         </div>
       )}

@@ -5,6 +5,16 @@ export default function About() {
         <div className="page">
             <h1>About MetaPetz</h1>
 
+            <div className="video-container">
+                <iframe
+                    src="https://www.youtube.com/embed/9qWBir79Ih4"
+                    title="MetaPetz Promotional Video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                />
+            </div>
+
             <p>
                 MetaPetz is a mixed-reality pet experience built exclusively for
                 Meta Quest. It lets you adopt, customise, and interact with a virtual

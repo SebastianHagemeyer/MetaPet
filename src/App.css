@@ -438,3 +438,17 @@
 .footer-divider {
   opacity: 0.5;
 }
+
+/* Privacy Policy page */
+.privacy-page {
+  text-align: left;
+}
+
+.privacy-page ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.privacy-page ul li {
+  margin-bottom: 0.5rem;
+}

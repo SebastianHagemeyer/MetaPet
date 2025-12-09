@@ -8,6 +8,7 @@ import Adopt from '/src/pages/Adopt.jsx'
 import Petz from '/src/pages/Petz.jsx'
 import PetView from '/src/pages/PetView.jsx'
 import Help from '/src/pages/Help.jsx'
+import PrivacyPolicy from '/src/pages/PrivacyPolicy.jsx'
 import '/src/index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -28,6 +29,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="help" element={<Help />} />
 
           <Route path="view/:id" element={<PetView />} />
+          <Route path="privacy-policy" element={<PrivacyPolicy />} />
 
           {/* 404 fallback */}
           <Route path="*" element={<h1>404 – Page not found</h1>} />

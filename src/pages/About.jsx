@@ -26,7 +26,7 @@ export default function About() {
                 Each pet is created through your own choices and customisation options,
                 giving you control over its appearance, colour, and style. MetaPetz aims
                 to make virtual pets feel tangible inside your environment using Quest's
-                depth, surface detection, and hand-tracking capabilities. For example, waving your hand in a circular motion gets your pet to sit. When fingers are curled toward your body repeatedly, then your pet comes to you.
+                depth, surface detection, and hand-tracking capabilities. For example, clapping will get your pet's attention. When you raise your right hand and have your left hand below your head, your pet will sit. You can also summon a bone toy and pinch to hold it, then throw it by releasing the pinch while moving your hand quickly.
             </p>
 
             <p>

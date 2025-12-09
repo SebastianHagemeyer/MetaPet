@@ -139,12 +139,37 @@ export default function PetPreview({ pet }) {
             </p>
             <div className="share-modal__qr">
               <QRCode value={shareUrl} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
-              <div className="share-modal__id">Pet ID: {shortId}</div>
+              <div
+                className="share-modal__id share-modal__id--clickable"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(shortId);
+                    setShowToast(true);
+                  } catch (err) {
+                    console.error("Failed to copy:", err);
+                  }
+                }}
+              >
+                Pet ID: {shortId}
+              </div>
             </div>
             <div className="share-modal__actions">
               <input className="share-modal__link" value={shareUrl} readOnly />
               <button className="share-modal__button" onClick={handleShare}>
                 Copy Link
+              </button>
+              <button
+                className="share-modal__button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(shortId);
+                    setShowToast(true);
+                  } catch (err) {
+                    console.error("Failed to copy:", err);
+                  }
+                }}
+              >
+                Copy Code
               </button>
             </div>
           </div>

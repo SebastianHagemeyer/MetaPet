@@ -95,6 +95,8 @@
 
 .share-modal {
   width: min(480px, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
   background: #121212;
   color: #f5f5f5;
   border-radius: 14px;
@@ -239,6 +241,35 @@
   to {
     transform: translateY(0) scale(1);
     opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .share-modal {
+    padding: 1rem;
+  }
+
+  .share-modal__sub {
+    font-size: 0.85rem;
+    margin: 0.3rem 0 0.6rem;
+  }
+
+  .share-modal__qr {
+    padding: 0.75rem;
+  }
+
+  .share-modal__actions {
+    flex-wrap: wrap;
+  }
+
+  .share-modal__link {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .share-modal__button {
+    padding: 0.5rem;
+    font-size: 0.85rem;
   }
 }
 

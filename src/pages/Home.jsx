@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import petzLogo from '/src/assets/metapetzlogodark.svg'
 
 export default function Home() {
@@ -14,6 +15,10 @@ export default function Home() {
       <p className="read-the-docs">
         Curate and interact with your own pet in AR.
       </p>
+
+      <Link to="/help" className="confused-button">
+        Confused?
+      </Link>
     </div>
   )
 }

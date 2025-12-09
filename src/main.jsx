@@ -7,6 +7,7 @@ import About from '/src/pages/About.jsx'
 import Adopt from '/src/pages/Adopt.jsx'
 import Petz from '/src/pages/Petz.jsx'
 import PetView from '/src/pages/PetView.jsx'
+import Help from '/src/pages/Help.jsx'
 import '/src/index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -24,6 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="about" element={<About />} />
           <Route path="adopt" element={<Adopt />} />
           <Route path="petz" element={<Petz />} />
+          <Route path="help" element={<Help />} />
 
           <Route path="view/:id" element={<PetView />} />
 

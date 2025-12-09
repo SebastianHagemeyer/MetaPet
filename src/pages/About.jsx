@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function About() {
     return (
         <div className="page">
@@ -34,6 +36,10 @@ export default function About() {
                 MetaPetz is designed around one goal: providing a fun, immersive, and
                 personalised companion inside mixed reality on Meta Quest.
             </p>
+
+            <Link to="/help" className="confused-button">
+                Confused?
+            </Link>
 
             <h2>More</h2>
 

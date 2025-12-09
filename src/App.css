@@ -175,6 +175,7 @@
 
 .share-modal {
   width: min(480px, 100%);
+  min-height: 300px;
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
   background: #121212;

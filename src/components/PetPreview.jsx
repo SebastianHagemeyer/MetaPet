@@ -138,7 +138,7 @@ export default function PetPreview({ pet }) {
               Scan to view in VR headset or open the link in any browser to see this pet.
             </p>
             <div className="share-modal__qr">
-              <QRCode value={shareUrl} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
+              <QRCode value={shareUrl} size={180} style={{ height: "auto", minHeight: "180px", maxWidth: "100%", width: "100%" }} />
               <div
                 className="share-modal__id share-modal__id--clickable"
                 onClick={async () => {

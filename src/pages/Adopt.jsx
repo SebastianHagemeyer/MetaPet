@@ -9,6 +9,7 @@ import { savePetToDB, getUserIP, hasIPAdopted, recordIPAdoption } from "/src/api
 import randomIcon from "/src/assets/random.svg";
 
 import { PET_NAMES , PET_DESCRIPTIONS} from "/src/data/petpresets";
+import Footer from "../components/Footer";
 
 // ------------- Pet Model -----------------
 
@@ -293,6 +294,7 @@ const randomizeDescription = () => {
             <div className="page">
                 <h1>Adopt</h1>
                 <p>Loading...</p>
+                <Footer />
             </div>
         );
     }
@@ -327,6 +329,7 @@ const randomizeDescription = () => {
                         Back
                     </button>
                 </div>
+                <Footer />
             </div>
         );
     }
@@ -518,6 +521,8 @@ const randomizeDescription = () => {
                     </>
                 )}
             </div>
+
+            <Footer />
         </div>
     );
 }

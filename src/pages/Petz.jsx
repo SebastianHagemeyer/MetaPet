@@ -2,6 +2,7 @@
 import PetPreview from "/src/components/PetPreview";
 import { getPetsFromDB } from "/src/api/petsDb";
 import { useState, useEffect, useMemo } from "react";
+import Footer from "../components/Footer";
 
 // Calculate how many pets to show based on screen width
 function getDisplayLimit(width) {
@@ -151,6 +152,8 @@ export default function Petz() {
           )}
         </>
       )}
+
+      <Footer />
     </div>
   );
 }
